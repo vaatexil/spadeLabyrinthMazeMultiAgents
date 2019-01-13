@@ -1,0 +1,33 @@
+body{
+    
+}
+td{
+    background-color:grey;
+    width:50px;
+    height:50px;
+}
+.slave {
+    background: url("medias/slave.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+  .engi {
+    background: url("medias/engineer.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+  .scout {
+    background: url("medias/scout.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+  .treasure {
+    background: url("medias/treasure.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+  }
+  .walls {
+    background: url("medias/walls.png");
+    background-repeat: no-repeat;
+    background-size: contain;
+  }

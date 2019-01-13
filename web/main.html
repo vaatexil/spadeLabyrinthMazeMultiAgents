@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Hello, World!</title>
+  <link href="css.css" rel="stylesheet" type="text/css">
+  </style>
+  <!-- Include eel.js - note this file doesn't exist in the 'web' directory -->
+  <script type="text/javascript" src="/eel.js"></script>
+  <script type="text/javascript">
+    eel.expose(say_hello_js); // Expose this function to Python
+    function say_hello_js(x) {
+      console.log("Hello from " + x);
+    }
+
+    say_hello_js("Javascript World!");
+    eel.say_hello_py("prends ton tab xD"); // Call a Python function
+  </script>
+</head>
+<body>
+  <h1>
+    The Pyramidal Maze
+  </h1>
+  <table>
+  </table>
+
+</body>
+<script type="text/javascript" src="main.js"></script>
+
+</html>

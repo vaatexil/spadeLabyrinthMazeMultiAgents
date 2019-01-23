@@ -1,13 +1,14 @@
 from spade.agent import Agent
 from spade.behaviour import CyclicBehaviour, PeriodicBehaviour
 from spade.message import Message
+from spade.template import Template
 import json
 import datetime
 import copy
 messageReceived = []
 
 
-class PeriodicSenderScout(Agent):
+class PeriodicSenderWorker(Agent):
     def constructor(self, maze, eel):
         self.maze = maze
         self.eel = eel
@@ -15,17 +16,14 @@ class PeriodicSenderScout(Agent):
     class InformBehav(PeriodicBehaviour):
         def init(self, maze, eel, mr):
             self.maze = maze  # maze (array 3D width - height - depth (this dimension is when any agents are on the same cell))
-            self.id = 4  # 4 is for scout
+            self.id = 6  # 4 is for the worker
             self.messageReceived = mr  # messages that we get from listening to others agents
             self.directions = [[1, 0], [0, 1], [-1, 0], [0, -1]]
             # Find where our agent is at time 0
             self.searchPosition()
             # Calculation of the direction to not exit the boundaries of the maze
             self.calcDirection();
-            print(self.position)
-            print(self.direction)
             # position of the doors relatively to the direction taken
-            self.doorFounded = []
             self.directionsDoors = [[0, 1], [-1, 0], [0, -1], [1, 0]]
 
             self.eel = eel  # to render the maze in JS
@@ -37,17 +35,15 @@ class PeriodicSenderScout(Agent):
                     self.direction = 0
                 else:
                     self.direction = self.direction + 1  # move forward
-            self.maze.maze[self.position[0]][self.position[1]].remove(self.id)  # behind become an empty cell
+            self.maze.maze[self.position[0]][self.position[1]].remove(
+                self.id)  # behind become an empty cell
             # update of the position
             self.position[0] += self.directions[self.direction][0]
             self.position[1] += self.directions[self.direction][1]
-            self.maze.maze[self.position[0]][self.position[1]] = [self.id] + self.maze.maze[self.position[0]][self.position[1]]  # New position updated
+            self.maze.maze[self.position[0]][self.position[1]] = [
+                self.id] + self.maze.maze[self.position[0]][self.position[1]]  # New position updated
 
-        def searchDoor(self):  # search if there is a door nearby the agent
-            if(self.maze.maze[self.position[0] + self.directionsDoors[self.direction][0]][self.position[1] + self.directionsDoors[self.direction][1]][0] == 2):
-                # It means there is a door nearby in an adjacent cell
-                print("Scout : I've found a door ! ")
-                self.doorFounded.append(str(("I've found a door ! ", (self.position[0] + self.directionsDoors[self.direction][0], self.position[1] + self.directionsDoors[self.direction][1]))))
+
 
         def calcDirection(self):
             width = self.maze.width
@@ -59,14 +55,10 @@ class PeriodicSenderScout(Agent):
                 self.direction = 2
             elif(self.position[0] == 0 and self.position[1] == width - 1): 
                 self.direction = 3
-            elif(self.position[1] == 0): # in function of the initial position, we give a direction to our agent
-                self.direction = 3 # goes up, cause 
-            elif(self.position[1] == width - 1):
-                self.direction = 1
-            elif(self.position[0] == 0):
+            elif(self.position[0] == 0 or self.position[0] == width -1): # in function of the initial position, we give a direction to our agent
                 self.direction = 0
             else:
-                self.direction = 2
+                self.direction = 1
         def searchPosition(self):
             width = self.maze.width
             for i in range(0, width):  # we search our agent in the labyrinth
@@ -94,21 +86,24 @@ class PeriodicSenderScout(Agent):
                 if(index != -1) :
                     found = True
                 distance += 1
-            # print("DISTANCE : ",distance)
+            print("DISTANCE : ",distance)
             return distance
 
         async def run(self):
             # Instantiate the message
             msg = Message(to="lmengineer1@conversejs.org")
             # calculates the distance between this agent and a given agent with its id
-            if(self.calcDist(0,5) <= 3 and len(self.doorFounded) != 0) :
-                msg.body = self.doorFounded[0]
-                await self.send(msg)
+            # if(self.calcDist(0,5) <= 3):
+            #     print("SENDING TO THE AGENT")
             # Our agent will move, we will calculate its next position 
-
             self.calcNewPos()
             # Search door to help the two other agents
-            self.searchDoor()
+            tmp = False
+            if(tmp == True): # it means the scout discover the door
+                # Set the message content
+                msg.body = "There is a door here : "
+                await self.send(msg)
+
             # send the movement to the JS side
             json_string = json.dumps(self.maze.maze)
             self.eel.updateMaze(json_string)
@@ -132,7 +127,7 @@ class PeriodicSenderScout(Agent):
         self.add_behaviour(b)
 
 
-class ReceiverScout(Agent):
+class ReceiverWorker(Agent):
     class RecvBehav(CyclicBehaviour):
         def constructor(self, mr):
             self.mr = mr
@@ -153,5 +148,7 @@ class ReceiverScout(Agent):
         print("ReceiverAgent started")
         b = self.RecvBehav()
         b.constructor(messageReceived)
-        self.add_behaviour(b)
+        template = Template()
+        template.set_metadata("performative", "inform")
+        self.add_behaviour(b, template)
 

@@ -2,6 +2,10 @@
 import time
 from scout.scout import ReceiverScout
 from scout.scout import PeriodicSenderScout
+from engineer.engineer import ReceiverEngineer
+from engineer.engineer import PeriodicSenderEngineer
+from worker.worker import ReceiverWorker
+from worker.worker import PeriodicSenderWorker
 from maze.PyramidalMaze import PyramidalMaze
 
 import eel
@@ -27,7 +31,7 @@ if __name__ == "__main__":
     maze = PyramidalMaze(9) 
 
     # We create our scout
-    receiverScout = ReceiverScout("lmscout1@conversejs.org", "woweygiowa96")
+    receiverScout = ReceiverScout("lmworker1@conversejs.org", "woweygiowa96")
     senderScout = PeriodicSenderScout("lmscout1@conversejs.org", "woweygiowa96")
 
     # We create our engineer
@@ -38,6 +42,10 @@ if __name__ == "__main__":
     receiverScout.start()
     senderScout.constructor(maze,eel)
     senderScout.start()
+
+    receiverEngineer.start()
+    senderEngineer.constructor(maze,eel)
+    senderEngineer.start()
 
     eel.start('main.html', options=web_app_options)           # Start (this blocks and enters loop)
 

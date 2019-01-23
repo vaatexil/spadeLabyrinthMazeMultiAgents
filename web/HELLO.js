@@ -15,7 +15,7 @@ function init() {
 
 function updateClassMaze(maze){
     var height = maze.length
-    var classes = ["none","walls","doors","treasure","scout","slave", "engi"]
+    var classes = ["none","walls","doors","treasure","scout","engi", "slave"]
     for (var x = 0; x < height; x++) {
         for (var y = 0; y < height; y++) {
             var td = document.getElementsByTagName("td")[x*height+y]

@@ -8,12 +8,13 @@
   <!-- Include eel.js - note this file doesn't exist in the 'web' directory -->
   <script type="text/javascript" src="/eel.js"></script>
   <script type="text/javascript">
-    eel.expose(say_hello_js); // Expose this function to Python
-    function say_hello_js(x) {
-      console.log("Hello from " + x);
+    eel.expose(updateMaze); // Expose this function to Python
+    function updateMaze(x) {
+      var maze = JSON.parse(x)
+      updateClassMaze(maze)
+      console.log(maze)
     }
 
-    say_hello_js("Javascript World!");
     eel.say_hello_py("prends ton tab xD"); // Call a Python function
   </script>
 </head>
@@ -25,6 +26,6 @@
   </table>
 
 </body>
-<script type="text/javascript" src="main.js"></script>
+<script type="text/javascript" src="HELLO.js"></script>
 
 </html>

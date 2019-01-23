@@ -1,3 +1,9 @@
-lmscout1
-lmengineer1
-lmworker1
+lmscout1 : 
+Role : Search doors and then ask to the engineer if they are true doors
+    if yes -> scout stops the research 
+    if no -> scout continues to find doors
+lmengineer1 : receive from scout the location of the doors, 
+    if true door -> search for the worker to open the door then stops
+lmworker1 : receive order from engineer and open the door then an event DOOR OPEN pops 
+then all the agents are tpd inside the second level
+And so on and so forth until the end

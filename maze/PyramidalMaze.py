@@ -29,11 +29,10 @@ class PyramidalMaze:
         for i in range(0, len(posWalls)):
             indexDoor = randint(0, len(posWalls[i])-1)
             posDoor = posWalls[i][indexDoor]
-            self.maze[posDoor[0]][posDoor[1]] = 2
-        self.maze[math.floor(width/2)][math.floor(width/2)] = 3  # treasure
+            self.maze[posDoor[0]][posDoor[1]] = [2]
+        self.maze[math.floor(width/2)][math.floor(width/2)] = [3,0]  # treasure
         posAgents = [4, 5, 6]
         random.shuffle(posAgents)
-        self.maze[randint(1,width -2)][0] = [posAgents[0]]  # we randomly put agents in our maze
-        self.maze[width - 1][randint(1,width -2)] = [posAgents[1]]
-        self.maze[randint(1,width -2)][width - 1] = [posAgents[2]]
-        print(self.maze)
+        self.maze[randint(1,width -2)][0] = [posAgents[0]] + self.maze[randint(1,width -2)][0]  # we randomly put agents in our maze
+        self.maze[width - 1][randint(1,width -2)] = [posAgents[1]] + self.maze[width - 1][randint(1,width -2)]
+        self.maze[randint(1,width -2)][width - 1] = [posAgents[2]] + self.maze[randint(1,width -2)][width - 1]

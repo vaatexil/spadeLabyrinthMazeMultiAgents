@@ -23,12 +23,21 @@ web_app_options = {
 
 
 if __name__ == "__main__":
-    receiveragent = ReceiverScout("lmworker1@conversejs.org", "woweygiowa96")
-    receiveragent.start()
-    senderagent = PeriodicSenderScout("lmscout1@conversejs.org", "woweygiowa96")
-    maze = PyramidalMaze(9) # we create our maze
-    senderagent.constructor(maze,eel)
-    senderagent.start()
+    # we create our maze
+    maze = PyramidalMaze(9) 
+
+    # We create our scout
+    receiverScout = ReceiverScout("lmscout1@conversejs.org", "woweygiowa96")
+    senderScout = PeriodicSenderScout("lmscout1@conversejs.org", "woweygiowa96")
+
+    # We create our engineer
+    receiverEngineer = ReceiverEngineer("lmengineer1@conversejs.org","woweygiowa96")
+    senderEngineer = PeriodicSenderEngineer("lmscout1@conversejs.org", "woweygiowa96")
+
+    # We create our worker
+    receiverScout.start()
+    senderScout.constructor(maze,eel)
+    senderScout.start()
 
     eel.start('main.html', options=web_app_options)           # Start (this blocks and enters loop)
 

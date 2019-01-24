@@ -41,6 +41,7 @@ class PeriodicSenderScout(Agent):
             # update of the position
             self.position[0] += self.directions[self.direction][0]
             self.position[1] += self.directions[self.direction][1]
+            print("d",str(self.direction),str(self.position))
             self.maze.maze[self.position[0]][self.position[1]] = [self.id] + self.maze.maze[self.position[0]][self.position[1]]  # New position updated
 
         def searchDoor(self):  # search if there is a door nearby the agent
@@ -65,6 +66,8 @@ class PeriodicSenderScout(Agent):
                 self.direction = 1
             elif(self.position[0] == 0):
                 self.direction = 0
+            elif(self.position[0] == width - 1):
+                self.direction = 1
             else:
                 self.direction = 2
         def searchPosition(self):
@@ -101,8 +104,9 @@ class PeriodicSenderScout(Agent):
             # Instantiate the message
             msg = Message(to="lmengineer1@conversejs.org")
             # calculates the distance between this agent and a given agent with its id
-            if(self.calcDist(0,5) <= 3 and len(self.doorFounded) != 0) :
-                msg.body = self.doorFounded[0]
+            # if(self.calcDist(0,5) <= 3 and len(self.doorFounded) != 0) :
+            if(True):
+                msg.body = "ok"
                 await self.send(msg)
             # Our agent will move, we will calculate its next position 
 

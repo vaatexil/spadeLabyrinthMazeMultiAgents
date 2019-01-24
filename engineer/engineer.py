@@ -24,7 +24,8 @@ class PeriodicSenderEngineer(Agent):
             self.calcDirection()
             # position of the doors relatively to the direction taken
             self.directionsDoors = [[0, 1], [-1, 0], [0, -1], [1, 0]]
-
+            self.speaked = False
+            self.received = False
             self.eel = eel  # to render the maze in JS
 
         def calcNewPos(self):
@@ -52,10 +53,15 @@ class PeriodicSenderEngineer(Agent):
                 self.direction = 2
             elif(self.position[0] == 0 and self.position[1] == width - 1): 
                 self.direction = 3
-            elif(self.position[0] == 0 or self.position[0] == width -1): # in function of the initial position, we give a direction to our agent
+            elif(self.position[1] == 0): # in function of the initial position, we give a direction to our agent
+                self.direction = 3 # goes up, cause 
+            elif(self.position[1] == width - 1):
+                self.direction = 1
+            elif(self.position[0] == 0):
                 self.direction = 0
             else:
-                self.direction = 1
+                self.direction = 2
+                
         def searchPosition(self):
             width = self.maze.width
             for i in range(0, width):  # we search our agent in the labyrinth
@@ -83,15 +89,19 @@ class PeriodicSenderEngineer(Agent):
                 if(index != -1) :
                     found = True
                 distance += 1
-            print("DISTANCE : ",distance)
             return distance
 
         async def run(self):
             # Instantiate the message
-            msg = Message(to="lmengineer1@conversejs.org")
+            msg = Message(to="lmworker1@conversejs.org")
             # calculates the distance between this agent and a given agent with its id
-            if(len(self.messageReceived) > 0 ):
-                print("I'm going to tell it to my slave !")
+            if(len(self.messageReceived) > 0 and self.speaked == False):
+                if(self.received == False):
+                    print("I'm going to tell it to my slave !")
+                    self.received = True
+                if(self.calcDist(0,6) <= 3) :
+                    msg.body = "Hello slave, the door is here : "+str(self.messageReceived)
+                    await self.send(msg)
             #Our agent will move, we will calculate its next position 
                 self.calcNewPos()
             tmp = True
@@ -125,7 +135,7 @@ class ReceiverEngineer(Agent):
         def constructor(self, mr):
             self.mr = mr
         async def run(self):
-            print("RecvBehav2 running")
+            print("RecvBehavEngineer running")
             msg = await self.receive(timeout=120)  # wait for a message for 1 seconds
             if msg:
                 print("Message received with content: {}".format(msg.body))

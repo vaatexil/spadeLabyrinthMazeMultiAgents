@@ -1,5 +1,6 @@
 # Declaration of all the sender and receiver classes from scouts, workers and engineers
 import time
+import _thread
 from scout.scout import ReceiverScout
 from scout.scout import PeriodicSenderScout
 from engineer.engineer import ReceiverEngineer
@@ -7,7 +8,6 @@ from engineer.engineer import PeriodicSenderEngineer
 from worker.worker import ReceiverWorker
 from worker.worker import PeriodicSenderWorker
 from maze.PyramidalMaze import PyramidalMaze
-
 import eel
 
 eel.init('web')
@@ -16,36 +16,46 @@ eel.init('web')
 def say_hello_py(x):
     print('Hello from %s' % x)
 
-say_hello_py('Python World!')
-eel.updateMaze('Python World!')   # Call a Javascript function
+# say_hello_py('Python World!')
+# eel.updateMaze('Python World!')   # Call a Javascript function
 
-web_app_options = {
-    'mode': "chrome-app", #or "chrome"
-    'port': 8080,
-    'chromeFlags': ["--start-fullscreen", "--browser-startup-dialog"]
-}
+def webServer():
+    eel.start('main.html', block=False)           # Start (this blocks and enters loop)
+    while True:
+        eel.sleep(1.0)                  # Use eel.sleep(), not time.sleep()
 
+def receivers():
+    receiverEngineer = ReceiverEngineer("lmengineer1@conversejs.org","woweygiowa96")
+    receiverEngineer.start()
+    receiverScout = ReceiverScout("lmscout1@conversejs.org", "woweygiowa96")
+    receiverScout.start()
+    receiverWorker = ReceiverWorker("lmworker1@conversejs.org","woweygiowa96")
+    receiverWorker.start()
+
+try:
+    print("Starting webServer...")
+    _thread.start_new_thread( webServer,() ) # launch the server in parallel
+    _thread.start_new_thread( receivers, ()) # launch the receiver in parallel with the senders
+    print("webServer started !")
+
+except:
+   print ("Error: unable to start thread")
 
 if __name__ == "__main__":
     # we create our maze
     maze = PyramidalMaze(9) 
 
-    # We create our scout
-    receiverScout = ReceiverScout("lmworker1@conversejs.org", "woweygiowa96")
+    # We create our senders
     senderScout = PeriodicSenderScout("lmscout1@conversejs.org", "woweygiowa96")
-
-    # We create our engineer
-    receiverEngineer = ReceiverEngineer("lmengineer1@conversejs.org","woweygiowa96")
-    senderEngineer = PeriodicSenderEngineer("lmscout1@conversejs.org", "woweygiowa96")
-
-    # We create our worker
-    receiverScout.start()
+    senderEngineer = PeriodicSenderEngineer("lmengineer1@conversejs.org","woweygiowa96")
+    # senderWorker = PeriodicSenderWorker("lmengineer1@conversejs.org","woweygiowa96")
+   
+    # we launch our senders
     senderScout.constructor(maze,eel)
     senderScout.start()
 
-    receiverEngineer.start()
-    senderEngineer.constructor(maze,eel)
-    senderEngineer.start()
+    # senderEngineer.constructor(maze,eel)
+    # senderEngineer.start()
 
-    eel.start('main.html', options=web_app_options)           # Start (this blocks and enters loop)
-
+    # senderWorker.constructor(maze,eel)
+    # senderWorker.start()

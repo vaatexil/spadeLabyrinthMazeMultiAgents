@@ -55,10 +55,16 @@ class PeriodicSenderWorker(Agent):
                 self.direction = 2
             elif(self.position[0] == 0 and self.position[1] == width - 1): 
                 self.direction = 3
-            elif(self.position[0] == 0 or self.position[0] == width -1): # in function of the initial position, we give a direction to our agent
-                self.direction = 0
-            else:
+            elif(self.position[1] == 0): # in function of the initial position, we give a direction to our agent
+                self.direction = 3 # goes up, cause 
+            elif(self.position[1] == width - 1):
                 self.direction = 1
+            elif(self.position[0] == 0):
+                self.direction = 0
+            elif(self.position[0] == width - 1):
+                self.direction = 1
+            else:
+                self.direction = 2
         def searchPosition(self):
             width = self.maze.width
             for i in range(0, width):  # we search our agent in the labyrinth
@@ -96,7 +102,7 @@ class PeriodicSenderWorker(Agent):
             # if(self.calcDist(0,5) <= 3):
             #     print("SENDING TO THE AGENT")
             # Our agent will move, we will calculate its next position 
-            self.calcNewPos()
+            # self.calcNewPos()
             # Search door to help the two other agents
             tmp = False
             if(tmp == True): # it means the scout discover the door
@@ -135,7 +141,7 @@ class ReceiverWorker(Agent):
             print("RecvBehav running")
             msg = await self.receive(timeout=1000)  # wait for a message for 1 seconds
             if msg:
-                print("Message received with content: {}".format(msg.body))
+                print("I'm the slave and that's what I received {}".format(msg.body))
                 self.mr.append (msg.body)
             else:
                 print("Did not received any message after 10 seconds")

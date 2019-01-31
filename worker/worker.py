@@ -6,65 +6,70 @@ import json
 import datetime
 import copy
 messageReceived = []
-
-
-class PeriodicSenderWorker(Agent):
+import re
+from ast import literal_eval
+class Worker(Agent):
     def constructor(self, maze, eel):
         self.maze = maze
         self.eel = eel
 
     class InformBehav(PeriodicBehaviour):
         def init(self, maze, eel, mr):
+            self.level = 0
             self.maze = maze  # maze (array 3D width - height - depth (this dimension is when any agents are on the same cell))
             self.id = 6  # 4 is for the worker
             self.messageReceived = mr  # messages that we get from listening to others agents
             self.directions = [[1, 0], [0, 1], [-1, 0], [0, -1]]
+            self.posDoor = (-1, -1)
             # Find where our agent is at time 0
             self.searchPosition()
             # Calculation of the direction to not exit the boundaries of the maze
             self.calcDirection();
+            self.opened = False
             # position of the doors relatively to the direction taken
             self.directionsDoors = [[0, 1], [-1, 0], [0, -1], [1, 0]]
-
+            self.talkedScout = False
+            self.talkedEngineer = False
             self.eel = eel  # to render the maze in JS
 
         def calcNewPos(self):
             # see if we change wheter the position or not
-            if(self.position[0] + self.directions[self.direction][0] >= self.maze.width or self.position[0] + self.directions[self.direction][0] < 0 or self.position[1] + self.directions[self.direction][1] < 0 or self.position[1] + self.directions[self.direction][1] >= self.maze.width):
+            if(self.position[0] + self.directions[self.direction][0] >= self.maze.width - self.level * 2 or self.position[0] + self.directions[self.direction][0] < self.level*2 or self.position[1] + self.directions[self.direction][1] < self.level*2 or self.position[1] + self.directions[self.direction][1] >= self.maze.width - self.level * 2):
                 if(self.direction == 3):  # 4 directions possible that loop
                     self.direction = 0
                 else:
                     self.direction = self.direction + 1  # move forward
-            self.maze.maze[self.position[0]][self.position[1]].remove(
-                self.id)  # behind become an empty cell
+            try:
+                self.maze.maze[self.position[0]][self.position[1]].remove(self.id)  # behind become an empty cell
+            except ValueError:
+                print("np")  # do nothing
             # update of the position
             self.position[0] += self.directions[self.direction][0]
             self.position[1] += self.directions[self.direction][1]
-            self.maze.maze[self.position[0]][self.position[1]] = [
-                self.id] + self.maze.maze[self.position[0]][self.position[1]]  # New position updated
-
-
-
+            self.maze.maze[self.position[0]][self.position[1]] = [self.id] + self.maze.maze[self.position[0]][self.position[1]]  # New position updated
+        
         def calcDirection(self):
             width = self.maze.width
-            if(self.position[0] == 0 and self.position[1] == 0):
+            level = self.level
+            if(self.position[0] == level*2 and self.position[1] == level*2 ):
                 self.direction = 0
-            elif(self.position[0] == width - 1  and self.position[1] == 0): 
+            elif(self.position[0] == width - 1 - level*2  and self.position[1] == level*2 ): 
                 self.direction = 1
-            elif(self.position[0] == width - 1 and self.position[1] == width - 1): 
+            elif(self.position[0] == width - 1 - level*2 and self.position[1] == width - 1 - level*2): 
                 self.direction = 2
-            elif(self.position[0] == 0 and self.position[1] == width - 1): 
+            elif(self.position[0] == level*2 and self.position[1] == width - 1 - level*2): 
                 self.direction = 3
-            elif(self.position[1] == 0): # in function of the initial position, we give a direction to our agent
+            elif(self.position[1] == level*2): # in function of the initial position, we give a direction to our agent
                 self.direction = 3 # goes up, cause 
-            elif(self.position[1] == width - 1):
+            elif(self.position[1] == width - 1 - level*2):
                 self.direction = 1
-            elif(self.position[0] == 0):
+            elif(self.position[0] == level*2):
                 self.direction = 0
-            elif(self.position[0] == width - 1):
+            elif(self.position[0] == width - 1 - level*2):
                 self.direction = 1
             else:
                 self.direction = 2
+
         def searchPosition(self):
             width = self.maze.width
             for i in range(0, width):  # we search our agent in the labyrinth
@@ -74,11 +79,12 @@ class PeriodicSenderWorker(Agent):
 
         def calcDist(self, level, idAgent): # it calculates the distance between the agent and the others to   
             found = False
+            level = self.level
             distance = -1
             direction = copy.deepcopy(self.direction)
             position = copy.deepcopy(self.position)
             while(found == False):
-                if(position[0] + self.directions[direction][0] >= self.maze.width or position[0] + self.directions[direction][0] < 0 or position[1] + self.directions[direction][1] < 0 or position[1] + self.directions[direction][1] >= self.maze.width ):
+                if(position[0] + self.directions[direction][0] >= self.maze.width - level * 2 or position[0] + self.directions[direction][0] < level * 2 or position[1] + self.directions[direction][1] < level * 2 or position[1] + self.directions[direction][1] >= self.maze.width - level * 2 ):
                     if(direction == 3): # 4 directions possible that loop
                         direction = 0
                     else:
@@ -92,29 +98,48 @@ class PeriodicSenderWorker(Agent):
                 if(index != -1) :
                     found = True
                 distance += 1
-            print("DISTANCE : ",distance)
+            # print("DISTANCE : ",distance)
             return distance
 
         async def run(self):
+            print("JE RUN")
             # Instantiate the message
             msg = Message(to="lmengineer1@conversejs.org")
-            # calculates the distance between this agent and a given agent with its id
-            # if(self.calcDist(0,5) <= 3):
-            #     print("SENDING TO THE AGENT")
-            # Our agent will move, we will calculate its next position 
-            # self.calcNewPos()
-            # Search door to help the two other agents
-            tmp = False
-            if(tmp == True): # it means the scout discover the door
-                # Set the message content
-                msg.body = "There is a door here : "
-                await self.send(msg)
-
             # send the movement to the JS side
             json_string = json.dumps(self.maze.maze)
             self.eel.updateMaze(json_string)
             if( len (self.messageReceived) > 0 ):
-                print(self.messageReceived)
+                self.messageReceived[0]
+                res = re.search('\(\S+\)',self.messageReceived[0])
+                self.posDoor = res.group(0)
+            if(self.posDoor[0] != -1):
+                if(self.opened == False):
+                    pos = literal_eval(self.posDoor)
+                    if(pos[0] == self.position[0] and pos[1] == self.position[1]):
+                        print("IM OPENING THE DOOR !")
+                        self.opened = True
+                        self.maze.maze[pos[0] + self.directionsDoors[self.direction][0]][pos[1]+ self.directionsDoors[self.direction][1]] = 0 
+                    else:
+                        self.calcNewPos()
+                else: # From there, the door is open
+                    print("walkin !")
+                    self.calcNewPos()
+                    pos = literal_eval(self.posDoor)
+                    if(self.position[0] == pos[0] and self.position[1] == pos[1]):
+                        print("WORKER WINS")
+                        self.messageReceived = []
+                        self.posDoor = (-1, -1)
+                    else:
+                        if(self.talkedScout == False and self.calcDist(0,4) <= 3) :
+                            self.talkedScout = True
+                            msg = Message(to="lmscout1@conversejs.org")
+                            msg.body = "DOOR OPENED !"
+                            await self.send(msg)
+                        if(self.talkedEngineer == False and self.calcDist(0,5) <= 3) :
+                            self.talkedEngineer = True
+                            msg = Message(to="lmengineer1@conversejs.org")
+                            msg.body = "DOOR OPENED !"
+                            await self.send(msg)
             # self.kill()
 
         async def on_end(self):
@@ -124,16 +149,6 @@ class PeriodicSenderWorker(Agent):
         async def on_start(self):
             self.counter = 0
 
-    def setup(self):
-        print(
-            f"PeriodicSenderAgent started at {datetime.datetime.now().time()}")
-        start_at = datetime.datetime.now() + datetime.timedelta(seconds=5)
-        b = self.InformBehav(period=1, start_at=start_at)
-        b.init(self.maze, self.eel, messageReceived)
-        self.add_behaviour(b)
-
-
-class ReceiverWorker(Agent):
     class RecvBehav(CyclicBehaviour):
         def constructor(self, mr):
             self.mr = mr
@@ -151,10 +166,12 @@ class ReceiverWorker(Agent):
             self.agent.stop()
 
     def setup(self):
-        print("ReceiverAgent started")
-        b = self.RecvBehav()
-        b.constructor(messageReceived)
-        template = Template()
-        template.set_metadata("performative", "inform")
-        self.add_behaviour(b, template)
-
+        print("Worker is starting")
+        b1 = self.RecvBehav()
+        b1.constructor(messageReceived)
+        self.add_behaviour(b1)
+        start_at = datetime.datetime.now() 
+        b2 = self.InformBehav(period=0.2, start_at=start_at)
+        b2.init(self.maze, self.eel, messageReceived)
+        self.add_behaviour(b2)
+        

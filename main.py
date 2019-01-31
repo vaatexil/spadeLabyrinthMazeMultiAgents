@@ -1,12 +1,9 @@
 # Declaration of all the sender and receiver classes from scouts, workers and engineers
 import time
 import _thread
-from scout.scout import ReceiverScout
-from scout.scout import PeriodicSenderScout
-from engineer.engineer import ReceiverEngineer
-from engineer.engineer import PeriodicSenderEngineer
-from worker.worker import ReceiverWorker
-from worker.worker import PeriodicSenderWorker
+from scout.scout import Scout
+from engineer.engineer import Engineer
+from worker.worker import Worker
 from maze.PyramidalMaze import PyramidalMaze
 import eel
 
@@ -24,20 +21,9 @@ def webServer():
     while True:
         eel.sleep(1.0)                  # Use eel.sleep(), not time.sleep()
 
-def receivers():
-    receiverEngineer = ReceiverEngineer("lmengineer1@conversejs.org","woweygiowa96")
-    receiverEngineer.start()
-    receiverScout = ReceiverScout("lmscout1@conversejs.org", "woweygiowa96")
-    receiverScout.start()
-    receiverWorker = ReceiverWorker("lmworker1@conversejs.org","woweygiowa96")
-    receiverWorker.start()
-
 try:
-    print("Starting webServer...")
     _thread.start_new_thread( webServer,() ) # launch the server in parallel
-    _thread.start_new_thread( receivers, ()) # launch the receiver in parallel with the senders
     print("webServer started !")
-
 except:
    print ("Error: unable to start thread")
 
@@ -46,16 +32,16 @@ if __name__ == "__main__":
     maze = PyramidalMaze(9) 
 
     # We create our senders
-    senderScout = PeriodicSenderScout("lmscout1@conversejs.org", "woweygiowa96")
-    senderEngineer = PeriodicSenderEngineer("lmengineer1@conversejs.org","woweygiowa96")
-    # senderWorker = PeriodicSenderWorker("lmengineer1@conversejs.org","woweygiowa96")
-   
-    # we launch our senders
-    senderScout.constructor(maze,eel)
-    senderScout.start()
+    scout1 = Scout("lmscout1@conversejs.org", "woweygiowa96")
+    engineer1 = Engineer("lmengineer1@conversejs.org","woweygiowa96")
+    worker1 = Worker("lmworker1@conversejs.org","woweygiowa96")
 
-    # senderEngineer.constructor(maze,eel)
-    # senderEngineer.start()
+    scout1.constructor(maze,eel)
+    scout1.start()
 
-    # senderWorker.constructor(maze,eel)
-    # senderWorker.start()
+    engineer1.constructor(maze,eel)
+    engineer1.start()
+
+    worker1.constructor(maze,eel)
+    worker1.start()
+

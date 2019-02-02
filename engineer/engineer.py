@@ -82,7 +82,7 @@ class Engineer(Agent):
             distance = -1
             direction = copy.deepcopy(self.direction)
             position = copy.deepcopy(self.position)
-            while(found == False):
+            while(found == False ):
                 if(position[0] + self.directions[direction][0] >= self.maze.width - level * 2 or position[0] + self.directions[direction][0] < level * 2 or position[1] + self.directions[direction][1] < level * 2 or position[1] + self.directions[direction][1] >= self.maze.width - level * 2 ):
                     if(direction == 3): # 4 directions possible that loop
                         direction = 0
@@ -97,6 +97,8 @@ class Engineer(Agent):
                 if(index != -1) :
                     found = True
                 distance += 1
+                if(distance > self.maze.width * 4):
+                    found = False
             # print("DISTANCE : ",distance)
             return distance
 
@@ -106,17 +108,23 @@ class Engineer(Agent):
                     self.doorOpened = True
             if(self.doorOpened == True):
                 if(self.position[0] == self.posDoor[0] and self.position[1] == self.posDoor[1]):
+                    self.level += 1
+                    print("ENGINEER reached Level ",self.level+1)
                     self.speaked = False
                     self.wait = False
                     self.received = False
                     self.doorOpened = False
-                    self.messageReceived = []
+                    del self.messageReceived[:]
+                    self.maze.maze[self.position[0]][self.position[1]].remove(self.id)
+                    self.position[0] += self.directionsDoors[self.direction][0] * 2
+                    self.position[1] += self.directionsDoors[self.direction][1] * 2
+                    self.maze.maze[self.position[0]][self.position[1]] = [self.id] + self.maze.maze[self.position[0]][self.position[1]]  # New position updated
                 else:
                     self.calcNewPos()
             msg = Message(to="lmworker1@conversejs.org")
             # calculates the distance between this agent and a given agent with its id
-            
             if(len(self.messageReceived) > 0 and self.speaked == False and self.wait == False):
+                
                 if(self.received == False):
                     print("I'm going to tell it to my worker !")
                 if(self.calcDist(0,6) <= 3 and self.received == False) :

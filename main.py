@@ -14,7 +14,9 @@ def say_hello_py(x):
     print('Hello from %s' % x)
 
 # say_hello_py('Python World!')
-# eel.updateMaze('Python World!')   # Call a Javascript function
+# we create our maze
+width = 13
+eel.initJs(width)   # Call a Javascript function
 
 def webServer():
     eel.start('main.html', block=False)           # Start (this blocks and enters loop)
@@ -28,10 +30,8 @@ except:
    print ("Error: unable to start thread")
 
 if __name__ == "__main__":
-    # we create our maze
-    maze = PyramidalMaze(9) 
-
     # We create our senders
+    maze = PyramidalMaze(width) 
     scout1 = Scout("lmscout1@conversejs.org", "woweygiowa96")
     engineer1 = Engineer("lmengineer1@conversejs.org","woweygiowa96")
     worker1 = Worker("lmworker1@conversejs.org","woweygiowa96")

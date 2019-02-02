@@ -4,6 +4,7 @@ from spade.message import Message
 import json
 import datetime
 import copy
+import math
 messageReceived = []
 
 class Scout(Agent):
@@ -28,7 +29,7 @@ class Scout(Agent):
             self.messageDelivered = False
             self.directionsDoors = [[0, 1], [-1, 0], [0, -1], [1, 0]]
             self.eel = eel  # to render the maze in JS
-
+            self.won = False
         def calcNewPos(self):
             # see if we change wheter the position or not
             if(self.position[0] + self.directions[self.direction][0] >= self.maze.width - self.level * 2 or self.position[0] + self.directions[self.direction][0] < self.level*2 or self.position[1] + self.directions[self.direction][1] < self.level*2 or self.position[1] + self.directions[self.direction][1] >= self.maze.width - self.level * 2):
@@ -102,22 +103,30 @@ class Scout(Agent):
                 if(index != -1) :
                     found = True
                 distance += 1
+                if(distance > self.maze.width * 4):
+                    found = True
             # print("DISTANCE : ",distance)
             return distance
 
         async def run(self):
+            print(self.position)
             # Instantiate the message
             if(len(self.messageReceived) > 0): # The door was opened
                 if(self.position == self.posDoor):
                     self.level += 1
-                    print("SCOUT reached level : ",self.level)
+                    print("SCOUT reached level : ",self.level+1)
                     self.maze.maze[self.position[0]][self.position[1]].remove(self.id)
                     self.position[0] += self.directionsDoors[self.direction][0] * 2
                     self.position[1] += self.directionsDoors[self.direction][1] * 2
-                    self.messageReceived = []
-                    self.posDoor = []
-                    self.doorFounded = []
-                    self.messageDelivered = False
+                    self.maze.maze[self.position[0]][self.position[1]] = [self.id] + self.maze.maze[self.position[0]][self.position[1]]  # New position updated
+                    if(self.level < math.floor(self.maze.width/2)/2):
+                        del self.messageReceived[:]
+                        self.posDoor = []
+                        self.doorFounded = []
+                        self.messageDelivered = False
+                    else:
+                        print("WE WON !")
+                        self.agent.stop()
                 else:
                     self.calcNewPos()
             msg = Message(to="lmengineer1@conversejs.org")

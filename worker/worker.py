@@ -25,11 +25,11 @@ class Worker(Agent):
             self.searchPosition()
             # Calculation of the direction to not exit the boundaries of the maze
             self.calcDirection();
-            self.opened = False
             # position of the doors relatively to the direction taken
             self.directionsDoors = [[0, 1], [-1, 0], [0, -1], [1, 0]]
             self.talkedScout = False
             self.talkedEngineer = False
+            self.opened = False
             self.eel = eel  # to render the maze in JS
 
         def calcNewPos(self):
@@ -83,7 +83,7 @@ class Worker(Agent):
             distance = -1
             direction = copy.deepcopy(self.direction)
             position = copy.deepcopy(self.position)
-            while(found == False):
+            while(found == False ):
                 if(position[0] + self.directions[direction][0] >= self.maze.width - level * 2 or position[0] + self.directions[direction][0] < level * 2 or position[1] + self.directions[direction][1] < level * 2 or position[1] + self.directions[direction][1] >= self.maze.width - level * 2 ):
                     if(direction == 3): # 4 directions possible that loop
                         direction = 0
@@ -98,11 +98,12 @@ class Worker(Agent):
                 if(index != -1) :
                     found = True
                 distance += 1
+                if(distance > self.maze.width * 4):
+                    found = False
             # print("DISTANCE : ",distance)
             return distance
 
         async def run(self):
-            print("JE RUN")
             # Instantiate the message
             msg = Message(to="lmengineer1@conversejs.org")
             # send the movement to the JS side
@@ -122,13 +123,20 @@ class Worker(Agent):
                     else:
                         self.calcNewPos()
                 else: # From there, the door is open
-                    print("walkin !")
                     self.calcNewPos()
                     pos = literal_eval(self.posDoor)
                     if(self.position[0] == pos[0] and self.position[1] == pos[1]):
-                        print("WORKER WINS")
-                        self.messageReceived = []
+                        self.level += 1
+                        print("WORKER achieved level ",self.level)
+                        del self.messageReceived[:]
+                        self.maze.maze[self.position[0]][self.position[1]].remove(self.id)
+                        self.position[0] += self.directionsDoors[self.direction][0] * 2
+                        self.position[1] += self.directionsDoors[self.direction][1] * 2
+                        self.maze.maze[self.position[0]][self.position[1]] = [self.id] + self.maze.maze[self.position[0]][self.position[1]]  # New position updated
                         self.posDoor = (-1, -1)
+                        self.talkedScout = False
+                        self.talkedEngineer = False
+                        self.opened = False
                     else:
                         if(self.talkedScout == False and self.calcDist(0,4) <= 3) :
                             self.talkedScout = True

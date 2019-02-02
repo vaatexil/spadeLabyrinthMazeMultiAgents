@@ -9,7 +9,7 @@ class PyramidalMaze:
         self.maze = []
         self.width = width
         self.classes = ["none","walls","doors","treasure","scout","slave", "engi"]
-        numberWalls = math.floor(width/2)-2
+        numberWalls = int(math.floor(width/2)/2)
         posWalls = []
         for i in range(0, numberWalls):
             posWalls.append([])

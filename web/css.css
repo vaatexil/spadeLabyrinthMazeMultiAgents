@@ -6,7 +6,9 @@ td{
     height:50px;
 }
 .none{
-  background-color:grey;
+  background: url("medias/none.png");
+  background-repeat: no-repeat;
+  background-size: contain;
 }
 .slave {
     background: url("medias/slave.png");

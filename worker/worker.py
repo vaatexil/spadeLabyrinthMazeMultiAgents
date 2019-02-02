@@ -138,12 +138,12 @@ class Worker(Agent):
                         self.talkedEngineer = False
                         self.opened = False
                     else:
-                        if(self.talkedScout == False and self.calcDist(0,4) <= 3) :
+                        if(self.talkedScout == False and self.calcDist(0,4) <= 2) :
                             self.talkedScout = True
                             msg = Message(to="lmscout1@conversejs.org")
                             msg.body = "DOOR OPENED !"
                             await self.send(msg)
-                        if(self.talkedEngineer == False and self.calcDist(0,5) <= 3) :
+                        if(self.talkedEngineer == False and self.calcDist(0,5) <= 4) :
                             self.talkedEngineer = True
                             msg = Message(to="lmengineer1@conversejs.org")
                             msg.body = "DOOR OPENED !"

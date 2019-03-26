@@ -10,3 +10,6 @@
 
 ### Qu'est-ce que ça fait?
 Ca ouvre un web server créé avec EEL python sur le port 8080, ça génère aléatoirement un labyrinthe, où les agents essaieront de converger vers le centre en s'entraidant
+
+## Visuel
+![Alt text](/maze.png)
